@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>keybr stats</title>
+  <link rel="stylesheet" href="stats.css">
+</head>
+<body>
+  <header>
+    <h1>Typing stats</h1>
+    <p class="sub" id="summary">No data yet. Go practice on keybr.com.</p>
+  </header>
+
+  <section class="controls">
+    <label>Layout <select id="layout"></select></label>
+    <label>Min. count (bigrams, letters) <input type="number" id="minN" min="1" max="500" step="1"></label>
+    <label>Min. count (words) <input type="number" id="minW" min="1" max="100" step="1"></label>
+    <label class="chk"><input type="checkbox" id="spaces"> bigrams with space</label>
+    <label class="chk"><input type="checkbox" id="debug"> debug panel on keybr</label>
+  </section>
+
+  <nav class="tabs" role="tablist">
+    <button data-tab="B" class="active">Bigrams</button>
+    <button data-tab="W">Words</button>
+    <button data-tab="L">Letters</button>
+    <button data-tab="C">Mix-ups</button>
+    <button data-tab="T">Training text</button>
+  </nav>
+
+  <main>
+    <div id="tableWrap"></div>
+    <div id="train" hidden>
+      <p class="hint">Words from your own stats that hit your weakest spots.
+        Paste the text into keybr: <b>Settings → Lessons → Custom text</b>.</p>
+      <div class="filters">
+        <span class="fl">Hand</span>
+        <div class="seg" data-f="hand">
+          <button data-v="both">Both</button><button data-v="L">Left only</button><button data-v="R">Right only</button>
+        </div>
+        <span class="fl">Weak at</span>
+        <div class="seg" data-f="weak">
+          <button data-v="both">Speed + accuracy</button><button data-v="speed">Speed</button><button data-v="accuracy">Accuracy</button>
+        </div>
+        <span class="fl">Right pinky</span>
+        <div class="seg" data-f="pinky" id="pinkySeg"></div>
+        <span class="fl">Pattern</span>
+        <div class="seg" data-f="pattern">
+          <button data-v="none" title="Your weakest bigrams">Weak bigrams</button><button data-v="samefinger" title="Two different keys with the same finger in a row">Same finger</button><button data-v="mixups" title="Letters you confuse between hands">Hand mix-ups</button>
+        </div>
+      </div>
+      <div class="row"><button id="gen">Shuffle again</button><button id="copy">Copy</button><span id="copied"></span></div>
+      <p id="trainPairs" class="hint"></p>
+      <textarea id="trainText" rows="8" readonly></textarea>
+    </div>
+  </main>
+
+  <footer>
+    <p class="hint" id="legend"></p>
+    <div class="row">
+      <button id="export">Export JSON</button>
+      <button id="reset" class="danger">Reset stats</button>
+    </div>
+  </footer>
+  <script src="stats.js"></script>
+</body>
+</html>

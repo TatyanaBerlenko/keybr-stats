@@ -1,0 +1,27 @@
+{
+  "manifest_version": 3,
+  "name": "keybr detailed stats",
+  "version": "0.2.0",
+  "description": "Collects per-bigram, per-letter and per-word speed and error stats while you practice on keybr.com.",
+  "permissions": [
+    "storage"
+  ],
+  "action": {
+    "default_title": "keybr stats"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://www.keybr.com/*",
+        "https://keybr.com/*"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ]
+}

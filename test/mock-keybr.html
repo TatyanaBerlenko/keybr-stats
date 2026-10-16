@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="ru">
+<head><meta charset="utf-8"><title>mock keybr</title></head>
+<body>
+<!-- Mirrors the keybr DOM structure (packages/keybr-textinput-ui):
+     TextArea root > [div > textarea] + [div line > span item(inline-block) > span char(style=var(--textinput…))] -->
+<div id="root">
+  <div style="position:absolute;left:-1000px"><textarea id="ta"></textarea></div>
+  <div id="lines"></div>
+</div>
+<script>
+  const params = new URLSearchParams(location.search);
+  const stopOnError = params.get("mode") !== "garbage";
+  const texts = JSON.parse(params.get("texts") || '["тест"]');
+  let ti = 0, text, pos, steps, typo, garbage;
+  function start() { text = [...texts[ti % texts.length]]; ti++; pos = 0; steps = []; typo = false; garbage = []; render(); }
+
+  const ST = {
+    normal: "color: var(--textinput__color);",
+    special: "color: var(--textinput--special__color);",
+    hit: "color: var(--textinput--hit__color);",
+    miss: "color: var(--textinput--miss__color);",
+    garbage: "color: var(--textinput__color); background-color: var(--textinput--miss__color);",
+  };
+  function render() {
+    const chars = steps.map(s => s);
+    if (!stopOnError) chars.push(...garbage.map(c => ({ c, a: "garbage" })));
+    text.slice(pos).forEach((c, k) => chars.push({ c, a: k === 0 ? "cursor" : "normal" }));
+    // split into words, as in TextLine
+    const items = []; let cur = []; let ws = false;
+    for (const ch of chars) {
+      if (ch.c === " ") ws = true; else if (ws) { if (cur.length) items.push(cur); cur = []; ws = false; }
+      cur.push(ch);
+    }
+    if (cur.length) items.push(cur);
+    const line = document.createElement("div");
+    for (const it of items) {
+      const item = document.createElement("span");
+      item.setAttribute("style", "display: inline-block; white-space: nowrap;");
+      // adjacent chars with the same attributes are merged into one span, as in renderChars
+      let span = null, spanA = null;
+      for (const ch of it) {
+        const special = ch.c === " ";
+        const a = ch.a;
+        if (special || a !== spanA || !span) {
+          span = document.createElement("span");
+          if (a === "cursor") span.className = "cursor_x1y2";
+          const base = a === "cursor" || a === "normal" ? (special ? "special" : "normal") : a;
+          span.setAttribute("style", ST[base]);
+          item.appendChild(span); spanA = special ? null : a;
+        }
+        span.textContent += special ? " " : ch.c;
+        if (special) span = null;
+      }
+      line.appendChild(item);
+    }
+    const lines = document.getElementById("lines");
+    lines.replaceChildren(line);
+  }
+
+  document.getElementById("ta").addEventListener("keydown", (e) => {
+    if (e.key === "Backspace") { garbage.pop(); render(); return; }
+    if (e.key.length !== 1) return;
+    e.preventDefault();
+    const expected = text[pos];
+    if (e.key === expected && garbage.length === 0) {
+      steps.push({ c: expected, a: typo ? "miss" : "hit" }); pos++; typo = false;
+      if (pos === text.length) { start(); return; }
+    } else {
+      typo = true;
+      if (!stopOnError) garbage.push(e.key);
+    }
+    render();
+  });
+  start();
+  document.getElementById("ta").focus();
+</script>
+</body>
+</html>
